@@ -1,0 +1,38 @@
+{
+  "name": "dsh-fish-house",
+  "version": "0.1.0",
+  "description": "大肥鱼的小屋 · DSH 版：把 fish-house 的视频桌宠从 AstrBot 搬到 DeepSeek Harness，按 DSH 回合/工具状态驱动，并能接鲸鲸的微信消息事件。",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "icon": "./icon-sleepwear.png",
+  "exports": {
+    ".": "./lib/index.js",
+    "./icon": "./icon-sleepwear.png",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "runner",
+    "cordis.patch.yml",
+    "logo.png",
+    "icon-sleepwear.png",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "desktop-pet",
+    "fish-house"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "icon": "./icon-sleepwear.png"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*"
+  }
+}

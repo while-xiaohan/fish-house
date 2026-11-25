@@ -1,0 +1,22 @@
+{
+  "mode": "rest",
+  "seq": 2,
+  "updated_at": 1795438609.502681,
+  "phone_until": 0.0,
+  "event": "rest",
+  "work": false,
+  "auto_work": false,
+  "bubble": "回窝里歇着",
+  "bubble_until": 1795438617.5026581,
+  "bubble_source": "auto",
+  "after_phone": "",
+  "idle_until": 0,
+  "task_done": false,
+  "arrive_at": 0,
+  "action_key": "",
+  "action_loop": false,
+  "node_id": "",
+  "node_video": "",
+  "node_loop": false,
+  "node_label": ""
+}

@@ -1,0 +1,232 @@
+// dsh-fish-house —— 把「大肥鱼的小屋」从 AstrBot 搬到 DeepSeek Harness。
+//
+// 组成：
+//   runner/serve.py    原版 fish-house v2.0.1 逻辑 + astrbot 兼容壳（独立进程，端口默认 8899）
+//   本文件             cordis 插件：拉起 runner、把 DSH 回合状态翻译成小屋动作
+//
+// 事件映射：
+//   turn/start      → work_start（拿手机 → 走到电脑 → 电脑循环）
+//   tool/call       → work_ping（续期 + 气泡显示工具名）
+//   assistant/message → work_ping（保持干活态）
+//   turn/end        → work_end（延迟 endGraceMs，连续回合不用来回切）
+
+import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { appendFile, mkdir, readFile } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+export const name = 'dsh-fish-house'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const PKG = dirname(HERE)
+
+const API = '/api/v1/plugins/extensions/astrbot_plugin_fish_house'
+
+const DEFAULTS = {
+  host: '127.0.0.1',
+  port: 8899,
+  python: '',
+  source: '',
+  autoStart: true,
+  toolBubble: true,
+  endGraceMs: 1500,
+}
+
+function dshHome() {
+  return process.env.DSH_HOME || join(homedir(), '.dsh')
+}
+
+function stateDir() {
+  return join(dshHome(), 'dsh-fish-house')
+}
+
+function logPath() {
+  return join(stateDir(), 'runner.log')
+}
+
+async function log(line) {
+  try {
+    await mkdir(stateDir(), { recursive: true })
+    await appendFile(logPath(), `[${new Date().toISOString()}] ${line}\n`)
+  } catch {
+    /* 日志失败不影响主流程 */
+  }
+}
+
+/** 找 python：先看配置，再试本机常见位置，最后落到 PATH 里的 python。 */
+function resolvePython(configured) {
+  if (configured && existsSync(configured)) return configured
+  const candidates = [
+    'E:\\AI\\DeepSeek\\.venv\\Scripts\\python.exe',
+    'E:\\AI\\WhaleGirl\\runtime\\python.exe',
+    join(homedir(), 'AppData', 'Local', 'Programs', 'Python', 'Python313', 'python.exe'),
+  ]
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+  return 'python'
+}
+
+export function apply(ctx, config = {}) {
+  const cfg = { ...DEFAULTS, ...config }
+  const base = `http://${cfg.host}:${cfg.port}`
+  const source = cfg.source && existsSync(cfg.source) ? cfg.source : join(PKG, 'upstream-v2.0.1')
+  const dataDir = join(PKG, 'data')
+
+  const state = {
+    child: null,
+    ready: false,
+    stopping: false,
+    turns: new Set(),
+    endTimer: null,
+    lastAction: '',
+    lastActionAt: 0,
+  }
+
+  async function isHealthy() {
+    try {
+      const res = await fetch(`${base}/health`, { signal: AbortSignal.timeout(2000) })
+      return res.ok
+    } catch {
+      return false
+    }
+  }
+
+  async function waitHealthy(timeoutMs = 45000) {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      if (await isHealthy()) return true
+      await new Promise((r) => setTimeout(r, 700))
+    }
+    return false
+  }
+
+  function launch() {
+    if (state.child || state.stopping) return
+    const python = resolvePython(cfg.python)
+    const args = [join(PKG, 'runner', 'serve.py'), '--host', cfg.host, '--port', String(cfg.port)]
+    log(`启动 runner：${python} ${args.join(' ')}`)
+    const child = spawn(python, args, {
+      cwd: PKG,
+      windowsHide: true,
+      env: {
+        ...process.env,
+        FISH_HOUSE_SRC: source,
+        FISH_HOUSE_DATA: dataDir,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    state.child = child
+    child.stdout.on('data', (buf) => log(`[out] ${String(buf).trimEnd()}`))
+    child.stderr.on('data', (buf) => log(`[err] ${String(buf).trimEnd()}`))
+    child.on('exit', (code, signal) => {
+      log(`runner 退出：code=${code} signal=${signal}`)
+      state.child = null
+      state.ready = false
+      if (!state.stopping) {
+        // 内核被手动杀掉时给一次自动重拉；连续崩就不无限重试
+        setTimeout(() => {
+          if (!state.stopping && !state.child) {
+            launch()
+            waitHealthy().then((ok) => { state.ready = ok })
+          }
+        }, 3000)
+      }
+    })
+  }
+
+  async function ensureReady() {
+    if (state.ready && (await isHealthy())) return true
+    if (!state.child) launch()
+    state.ready = await waitHealthy()
+    if (state.ready) await log('runner 已就绪')
+    else await log('runner 启动失败（可看 runner.log）')
+    return state.ready
+  }
+
+  async function post(payload) {
+    if (!(await ensureReady())) return
+    const key = JSON.stringify(payload)
+    const now = Date.now()
+    // 同一动作 400ms 内不重复发，避免多会话一起刷
+    if (key === state.lastAction && now - state.lastActionAt < 400) return
+    state.lastAction = key
+    state.lastActionAt = now
+    try {
+      const res = await fetch(`${base}${API}/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: key,
+        signal: AbortSignal.timeout(8000),
+      })
+      if (!res.ok) await log(`event ${res.status}：${key}`)
+      else if (payload.action !== 'work_ping') await log(`${payload.action} ok（${payload.activity || '无气泡'}）`)
+    } catch (err) {
+      await log(`event 失败：${err?.message || err}`)
+    }
+  }
+
+  function scheduleRest() {
+    if (state.endTimer) clearTimeout(state.endTimer)
+    state.endTimer = setTimeout(() => {
+      if (state.turns.size === 0) post({ action: 'work_end' })
+    }, Math.max(200, Number(cfg.endGraceMs) || 0))
+  }
+
+  function onSessionEvent(session, event) {
+    try {
+      const type = event?.type
+      if (type === 'turn/start') {
+        if (state.endTimer) {
+          clearTimeout(state.endTimer)
+          state.endTimer = null
+        }
+        state.turns.add(session?.id || 'unknown')
+        const title = String(session?.title || '').trim()
+        post({ action: 'work_start', activity: title ? title.slice(0, 24) : '在电脑前干活' })
+        return
+      }
+      if (type === 'tool/call') {
+        const tool = String(event?.data?.name || '').slice(0, 40)
+        post({ action: 'work_ping', activity: cfg.toolBubble && tool ? `工具：${tool}` : '' })
+        return
+      }
+      if (type === 'assistant/message') {
+        post({ action: 'work_ping', activity: '' })
+        return
+      }
+      if (type === 'turn/end') {
+        state.turns.delete(session?.id || 'unknown')
+        if (state.turns.size === 0) scheduleRest()
+      }
+    } catch (err) {
+      log(`session/event 处理失败：${err?.message || err}`)
+    }
+  }
+
+  ctx.on('session/event', onSessionEvent)
+
+  if (cfg.autoStart) {
+    ensureReady().catch((err) => log(`启动异常：${err?.message || err}`))
+  }
+
+  ctx.effect(() => () => {
+    state.stopping = true
+    if (state.endTimer) clearTimeout(state.endTimer)
+    if (state.child) {
+      try {
+        state.child.kill()
+      } catch {
+        /* ignore */
+      }
+      state.child = null
+    }
+    return Promise.resolve()
+  })
+}
+
+export default { name, apply }

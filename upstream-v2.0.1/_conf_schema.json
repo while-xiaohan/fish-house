@@ -1,0 +1,8 @@
+{
+    "admin_only": {
+        "description": "只反馈管理员的对话",
+        "type": "bool",
+        "default": false,
+        "hint": "开启后，非管理员的消息不会触发桌宠动作、回复延迟与动画；默认关闭，所有用户都可触发。"
+    }
+}

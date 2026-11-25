@@ -1,0 +1,14 @@
+# 插件自动生成的历史备份（快照体积很大，不入库）
+data/plugin_data/astrbot_plugin_fish_house/backups/
+runner/data/plugin_data/astrbot_plugin_fish_house/backups/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 运行时状态与日志（频繁变化，不入库）
+data/plugin_data/astrbot_plugin_fish_house/state.json
+data/dist/fish_house/state.json
+*.log
+_serve.out
+_serve.err

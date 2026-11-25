@@ -1,0 +1,23 @@
+# dsh-fish-house —— 把「大肥鱼的小屋」挂进 DeepSeek Harness
+#
+# 插件本体只做两件事：
+#   1. 拉起 runner/serve.py（原版 AstrBot 插件逻辑 + 兼容壳，独立进程）；
+#   2. 把 DSH 的 session/event（回合开始 / 工具调用 / 回合结束）翻译成小屋的状态动作。
+#
+# 面板：      http://127.0.0.1:8899/panel/
+# 壁纸页：    http://127.0.0.1:8899/fish_house/index.html   （放 OBS / 当桌面壁纸）
+- insert:
+    - id: dsh-fish-house
+      name: dsh-fish-house
+      config:
+        host: 127.0.0.1
+        port: 8899
+        # 留空 = 自动找：E:\AI\DeepSeek\.venv\Scripts\python.exe → PATH 里的 python
+        python: ''
+        # 留空 = 包内 upstream-v2.0.1（原版 fish-house v2.0.1 源码）
+        source: ''
+        autoStart: true
+        # 工具名做成气泡文案（例如「工具：edit」）
+        toolBubble: true
+        # 回合结束后等这么久再回休息，避免连续回合来回切
+        endGraceMs: 1500
