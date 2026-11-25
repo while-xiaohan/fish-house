@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>大肥鱼的小屋</title>
+  <link rel="icon" type="image/png" href="./icon-sleepwear.png" />
   <script src="/api/plugin/page/bridge-sdk.js"></script>
   <link rel="stylesheet" href="./vendor/element-plus.css" />
   <link rel="stylesheet" href="./style.css?v=2.0.1" />
@@ -196,7 +197,7 @@
               </div>
             </div>
             <div v-else class="empty">这个项目还没有素材。</div>
-            <div class="section-title"><h3>项目画布</h3><span class="muted">保存只覆盖当前项目，点「应用为桌宠」才会生效</span></div>
+            <div class="section-title"><h3>项目画布</h3><span class="muted">保存当前项目会实时同步桌宠；只有切换其他项目时才需要「应用为桌宠」</span></div>
             <canvas-panel ref="projectCanvas" :key="projectId" :flow="projectFlow" :state="state" :library="projectAssets" :toast="toast" :confirm="confirm"
               :project-mode="true" @save-project="saveProjectFlow"></canvas-panel>
           </div>

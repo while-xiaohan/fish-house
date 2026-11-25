@@ -408,9 +408,13 @@ const app = createApp({
           action: "save", id: this.projectId,
           meta: this.projectForm,
           config: this.project.theme.config,
+          apply: true,
         });
         this.project = data.project;
-        this.toast("画布已保存到项目");
+        // 重新拉一次 overview，让首页「当前画布」和实时状态立刻刷新，
+        // 不然保存后只有项目内画布变了，首页看起来像没保存。
+        await this.load();
+        this.toast(data.applied ? "画布已保存，桌宠已实时生效" : "画布已保存到项目");
       } catch (error) { this.toast(`保存失败：${error.message || error}`, "err"); }
     },
     async onProjectAsset(event) {

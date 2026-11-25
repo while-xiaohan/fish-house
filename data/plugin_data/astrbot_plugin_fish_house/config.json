@@ -48,169 +48,169 @@
       {
         "id": "rest",
         "label": "日常衣服休息",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558.mp4",
         "loop": true,
         "role": "wait",
         "prompt": "这个节点是日常躺床上休息状态",
         "note": "",
         "duration": 12.096,
-        "media_id": "m_9593cff0",
+        "media_id": "m_7953da58",
         "x": 80.0,
         "y": 220.0
       },
       {
         "id": "phone_pickup",
         "label": "日常衣服拿起手机",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338.mp4",
         "loop": false,
         "role": "action",
         "prompt": "",
         "note": "",
         "duration": 4.064,
-        "media_id": "m_7d3c78a4",
+        "media_id": "m_11fe77a0",
         "x": 330.0,
         "y": 80.0
       },
       {
         "id": "phone_loop",
         "label": "日常衣服回消息",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64.mp4",
         "loop": true,
         "role": "phone",
         "prompt": "",
         "note": "",
         "duration": 8.064,
-        "media_id": "m_67489d7d",
+        "media_id": "m_b6678b62",
         "x": 580.0,
         "y": 80.0
       },
       {
         "id": "phone_putdown",
         "label": "日常衣服放下手机",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe.mp4",
         "loop": false,
         "role": "transition",
         "prompt": "",
         "note": "",
         "duration": 3.042,
-        "media_id": "m_6bc2f95a",
+        "media_id": "m_8c1fcbdf",
         "x": 830.0,
         "y": 80.0
       },
       {
         "id": "computer_go",
         "label": "去电脑",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b.mp4",
         "loop": false,
         "role": "transition",
         "prompt": "",
         "note": "",
         "duration": 5.175,
-        "media_id": "m_9a78e1dd",
+        "media_id": "m_ee5e851b",
         "x": 330.0,
         "y": 380.0
       },
       {
         "id": "computer_loop",
         "label": "玩电脑",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259.mp4",
         "loop": true,
         "role": "both",
         "prompt": "",
         "note": "",
         "duration": 15.072,
-        "media_id": "m_ee093b7d",
+        "media_id": "m_1d2e8da6",
         "x": 580.0,
         "y": 380.0
       },
       {
         "id": "computer_rest",
         "label": "电脑回休息",
-        "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-1-2.mp4",
+        "video": "videos/theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9.mp4",
         "loop": false,
         "role": "transition",
         "prompt": "",
         "note": "",
         "duration": 10.08,
-        "media_id": "m_6e4e66bb",
+        "media_id": "m_83291b46",
         "x": 835.0,
         "y": 263.0
       },
       {
         "id": "node_mwf81bo2",
         "label": "睡衣状态拿手机",
-        "video": "videos/theme_47b36706_asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-1-2.mp4",
+        "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae.mp4",
         "loop": false,
         "role": "action",
         "prompt": "",
         "note": "",
         "duration": 5.056009,
-        "media_id": "m_b91c2ed3",
+        "media_id": "m_f22185cc",
         "x": 282.0,
         "y": 769.0
       },
       {
         "id": "node_mwf81bs9",
         "label": "换睡衣休息",
-        "video": "videos/theme_47b36706_asset_d69070fcb0f74bf2bf7ae70e43c067f8-2a5775-1-2.mp4",
+        "video": "videos/asset_d69070fcb0f74bf2bf7ae70e43c067f8-2a5775.mp4",
         "loop": false,
         "role": "transition",
         "prompt": "需要睡觉的时候执行这个",
         "note": "",
         "duration": 15.071995,
-        "media_id": "m_80c673c4",
+        "media_id": "m_45803cce",
         "x": 832.0,
         "y": 570.0
       },
       {
         "id": "node_mwf81bw5",
         "label": "睡衣状态循环等待",
-        "video": "videos/theme_47b36706_asset_aac45d74e33e41aa98055be3e6e6763a-508bf8-1-2.mp4",
+        "video": "videos/asset_aac45d74e33e41aa98055be3e6e6763a-508bf8.mp4",
         "loop": true,
         "role": "wait",
         "prompt": "睡觉休息状态，平时休息不用这个",
         "note": "",
         "duration": 15.071995,
-        "media_id": "m_30075cb8",
+        "media_id": "m_5f344be2",
         "x": -44.0,
         "y": 585.0
       },
       {
         "id": "node_mwf825z4",
         "label": "睡衣状态回消息",
-        "video": "videos/theme_47b36706_asset_942eeaaeff854a06954f6ec93aec23fa-902991-1-2.mp4",
+        "video": "videos/asset_942eeaaeff854a06954f6ec93aec23fa-902991.mp4",
         "loop": true,
         "role": "phone",
         "prompt": "",
         "note": "",
         "duration": 5.056009,
-        "media_id": "m_873a613c",
+        "media_id": "m_793847c8",
         "x": 562.0,
         "y": 775.0
       },
       {
         "id": "node_mwf82t63",
         "label": "睡衣状态放下手机",
-        "video": "videos/theme_47b36706_asset_00186445a40c464882c759981f4a5409-05176c-1-2.mp4",
+        "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c.mp4",
         "loop": false,
         "role": "transition",
         "prompt": "",
         "note": "",
         "duration": 5.056009,
-        "media_id": "m_09eb8cb5",
+        "media_id": "m_eee0ef84",
         "x": 828.0,
         "y": 760.0
       },
       {
         "id": "node_mwf83glz",
         "label": "睡衣状态换日常衣服去工作",
-        "video": "videos/theme_47b36706_asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-1-2.mp4",
+        "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518.mp4",
         "loop": false,
         "role": "action",
         "prompt": "",
         "note": "",
         "duration": 10.08,
-        "media_id": "m_2555ddca",
+        "media_id": "m_868cecce",
         "x": 550.0,
         "y": 625.0
       }
@@ -334,88 +334,130 @@
   },
   "library": [
     {
-      "id": "m_9593cff0",
+      "id": "m_7953da58",
       "name": "休息循环",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558.mp4",
       "duration": 12.096
     },
     {
-      "id": "m_7d3c78a4",
+      "id": "m_11fe77a0",
       "name": "拿起手机",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338.mp4",
       "duration": 4.064
     },
     {
-      "id": "m_67489d7d",
+      "id": "m_b6678b62",
       "name": "玩手机 / 回消息",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64.mp4",
       "duration": 8.064
     },
     {
-      "id": "m_6bc2f95a",
+      "id": "m_8c1fcbdf",
       "name": "放下手机",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe.mp4",
       "duration": 3.042
     },
     {
-      "id": "m_9a78e1dd",
+      "id": "m_ee5e851b",
       "name": "去电脑",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b.mp4",
       "duration": 5.175
     },
     {
-      "id": "m_ee093b7d",
+      "id": "m_1d2e8da6",
       "name": "玩电脑 / 干活",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259.mp4",
       "duration": 15.072
     },
     {
-      "id": "m_6e4e66bb",
+      "id": "m_83291b46",
       "name": "电脑回休息",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-1-2.mp4",
+      "video": "videos/theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9.mp4",
       "duration": 10.08
     },
     {
-      "id": "m_80c673c4",
+      "id": "m_45803cce",
       "name": "换一套衣服回来躺下",
-      "video": "videos/theme_47b36706_asset_d69070fcb0f74bf2bf7ae70e43c067f8-2a5775-1-2.mp4",
+      "video": "videos/asset_d69070fcb0f74bf2bf7ae70e43c067f8-2a5775.mp4",
       "duration": 15.071995
     },
     {
-      "id": "m_09eb8cb5",
+      "id": "m_eee0ef84",
       "name": "睡衣放下手机",
-      "video": "videos/theme_47b36706_asset_00186445a40c464882c759981f4a5409-05176c-1-2.mp4",
+      "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c.mp4",
       "duration": 5.056009
     },
     {
-      "id": "m_2a740e22",
+      "id": "m_dcbeeb9d",
       "name": "睡衣换衣服去工作",
-      "video": "videos/theme_47b36706_asset_7aec5041e51a47368a97c70236872e7c-9426c7-1-2.mp4",
+      "video": "videos/asset_7aec5041e51a47368a97c70236872e7c-9426c7.mp4",
       "duration": 15.071995
     },
     {
-      "id": "m_873a613c",
+      "id": "m_793847c8",
       "name": "睡衣回消息",
-      "video": "videos/theme_47b36706_asset_942eeaaeff854a06954f6ec93aec23fa-902991-1-2.mp4",
+      "video": "videos/asset_942eeaaeff854a06954f6ec93aec23fa-902991.mp4",
       "duration": 5.056009
     },
     {
-      "id": "m_b91c2ed3",
+      "id": "m_f22185cc",
       "name": "睡衣拿手机",
-      "video": "videos/theme_47b36706_asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-1-2.mp4",
+      "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae.mp4",
       "duration": 5.056009
     },
     {
-      "id": "m_2555ddca",
+      "id": "m_868cecce",
       "name": "睡衣去工作",
-      "video": "videos/theme_47b36706_asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-1-2.mp4",
+      "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518.mp4",
       "duration": 10.08
     },
     {
-      "id": "m_30075cb8",
+      "id": "m_5f344be2",
       "name": "睡衣状态下的休息",
-      "video": "videos/theme_47b36706_asset_aac45d74e33e41aa98055be3e6e6763a-508bf8-1-2.mp4",
+      "video": "videos/asset_aac45d74e33e41aa98055be3e6e6763a-508bf8.mp4",
       "duration": 15.071995
+    },
+    {
+      "id": "m_8299fd29",
+      "name": "休息循环",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-1-2-3-4-5.mp4",
+      "duration": 12.096
+    },
+    {
+      "id": "m_5104ad88",
+      "name": "拿起手机",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-1-2-3-4-5.mp4",
+      "duration": 4.064
+    },
+    {
+      "id": "m_daa2b662",
+      "name": "玩手机 / 回消息",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-1-2-3-4-5.mp4",
+      "duration": 8.064
+    },
+    {
+      "id": "m_189aabc6",
+      "name": "放下手机",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-1-2-3-4-5.mp4",
+      "duration": 3.042
+    },
+    {
+      "id": "m_99ddd747",
+      "name": "去电脑",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-1-2-3-4-5.mp4",
+      "duration": 5.175
+    },
+    {
+      "id": "m_0870edaa",
+      "name": "玩电脑 / 干活",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-1-2-3-4-5.mp4",
+      "duration": 15.072
+    },
+    {
+      "id": "m_5697050c",
+      "name": "电脑回休息",
+      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-1-2-3-4-5.mp4",
+      "duration": 10.08
     }
   ],
   "theme_meta": {
@@ -427,13 +469,13 @@
   "active_theme_id": "47b36706",
   "theme_market_url": "https://shop.swellengine.com/",
   "videos": {
-    "rest": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-1-2.mp4",
-    "phone_pickup": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-1-2.mp4",
-    "phone_loop": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-1-2.mp4",
-    "phone_putdown": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-1-2.mp4",
-    "computer_go": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-1-2.mp4",
-    "computer_loop": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-1-2.mp4",
-    "computer_rest": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-1-2.mp4"
+    "rest": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-1-2-3-4-5.mp4",
+    "phone_pickup": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-1-2-3-4-5.mp4",
+    "phone_loop": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-1-2-3-4-5.mp4",
+    "phone_putdown": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-1-2-3-4-5.mp4",
+    "computer_go": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-1-2-3-4-5.mp4",
+    "computer_loop": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-1-2-3-4-5.mp4",
+    "computer_rest": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-1-2-3-4-5.mp4"
   },
   "audio": {
     "rest": false,

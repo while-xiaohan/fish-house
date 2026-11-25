@@ -300,8 +300,23 @@ def want_pajama(now=None) -> bool:
 
 
 def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
-    """把到点切睡衣/切回日常扔给小屋的流程图，只在跨过时间点时切一次。"""
+    """到点切睡衣/切回日常；状态被保存项目等操作打回休息时，也会自动补切。"""
     state = {"pajama": None}
+    pajama_nodes = {
+        "node_mwf81bs9",  # 换睡衣休息
+        "node_mwf81bw5",  # 睡衣状态循环等待
+        "node_mwf81bo2",  # 睡衣状态拿手机
+        "node_mwf825z4",  # 睡衣状态回消息
+        "node_mwf82t63",  # 睡衣状态放下手机
+    }
+
+    def switching_state() -> tuple[bool, str, str]:
+        plugin = server.plugin
+        mode = str(plugin.state.get("mode") or "")
+        node = str(plugin.state.get("node_id") or "")
+        label = str(plugin.state.get("node_label") or "")
+        is_pajama = mode == "flow" and (node in pajama_nodes or "睡衣" in label)
+        return is_pajama, mode, node
 
     def switch(node_id: str, reason: str) -> None:
         async def go():
@@ -317,13 +332,28 @@ def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
         while True:
             try:
                 want = want_pajama()
-                if state["pajama"] is None or want != state["pajama"]:
-                    first = state["pajama"] is None
-                    state["pajama"] = want
-                    if want:
-                        switch(PAJAMA_NODE, "启动时按当前时间补一次" if first else f"{PAJAMA_START_HOUR} 点到点，换睡衣")
-                    else:
-                        switch(DAY_NODE, "启动时按当前时间补一次" if first else f"{PAJAMA_END_HOUR} 点到点，换回日常")
+                first = state["pajama"] is None
+                is_pajama, _mode, _node = switching_state()
+
+                if want:
+                    # 11 点后如果因为保存项目/应用主题被踢回日常休息，20 秒内补回睡衣。
+                    state["pajama"] = True
+                    if not is_pajama:
+                        switch(
+                            PAJAMA_NODE,
+                            "启动时按当前时间补一次"
+                            if first
+                            else f"{PAJAMA_START_HOUR} 点后检测到不在睡衣状态，补切",
+                        )
+                else:
+                    state["pajama"] = False
+                    if is_pajama:
+                        switch(
+                            DAY_NODE,
+                            "启动时按当前时间补一次"
+                            if first
+                            else f"{PAJAMA_END_HOUR} 点后检测到还在睡衣状态，切回日常",
+                        )
             except Exception:  # noqa: BLE001
                 logger.warning("睡衣调度出错：%s", traceback.format_exc())
             time.sleep(20)

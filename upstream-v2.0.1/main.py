@@ -1508,6 +1508,21 @@ class FishHousePlugin(Star):
                 return item
         return None
 
+    def _resync_current_flow_node(self) -> None:
+        """画布保存后，把当前节点的动画/标题/循环标记立刻重算进 state。
+
+        否则公共桌宠页拿到的 node_video 还是旧值，会比较不出变化，继续播旧动画。
+        """
+        if str(self.state.get("mode") or "") != "flow":
+            return
+        node = self._flow_node(str(self.state.get("node_id") or ""))
+        if node is None:
+            return
+        self.state["node_video"] = str(node.get("video") or "")
+        self.state["node_label"] = str(node.get("label") or "")
+        self.state["node_loop"] = bool(node.get("loop"))
+        self.state["seq"] = int(self.state.get("seq") or 0) + 1
+
     def _flow_outgoing(self, node_id: str) -> list[dict[str, Any]]:
         return [
             item
@@ -2345,18 +2360,31 @@ class FishHousePlugin(Star):
             self._ensure_wait_edges()
             self._ensure_library()
             self._write_config()
+            self._resync_current_flow_node()
+            self._persist_active_flow()
+            await self._sync_public()
         elif action == "generate":
             self.flow = self._seed_flow()
             self._ensure_task_graph(self.flow)
             self._ensure_wait_edges()
             self._ensure_library()
             self._write_config()
+            self._resync_current_flow_node()
+            self._persist_active_flow()
+            await self._sync_public()
         elif action == "goto":
             node_id = str(payload.get("node_id") or "")
             if not await self.flow_goto(node_id, text=str(payload.get("text") or "")):
                 return error_response("节点不存在")
         else:
             return error_response("未知操作")
+        if action in {"save", "generate"} and str(self.state.get("mode") or "") == "flow":
+            node_id = str(self.state.get("node_id") or "")
+            valid_ids = {str(n.get("id") or "") for n in self.flow.get("nodes", [])}
+            if node_id and node_id not in valid_ids:
+                start = next((n for n in self.flow.get("nodes", []) if n.get("loop")), None)
+                if start:
+                    await self.flow_goto(str(start.get("id") or ""))
         return self._ok(flow=self.flow, state=dict(self.state), library=self.library)
 
     async def api_settings(self):
@@ -2504,6 +2532,84 @@ class FishHousePlugin(Star):
             "settings": {"crossfade_ms": int(self.settings.get("crossfade_ms", 400))},
         }
 
+    def _persist_active_flow(self) -> None:
+        """把当前运行画布回写到正在使用的项目，避免面板刷新后回退旧流程。"""
+        tid = str(self.active_theme_id or "")
+        if not tid:
+            return
+        project = self._project_dir(tid)
+        if not project:
+            return
+        try:
+            theme_file = project / "theme.json"
+            theme = theme_store.read_theme_json(theme_file)
+            theme.setdefault("config", {})["flow"] = json.loads(json.dumps(self.flow))
+            theme_file.write_text(
+                json.dumps(theme, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        except Exception as exc:
+            logger.warning(f"大肥鱼的小屋画布回写项目失败: {exc}")
+
+    def _sync_project_media(self, tid: str, config: dict[str, Any]) -> None:
+        """把项目里被画布/素材库引用的视频补到全局视频目录，公共桌宠页才取得到。"""
+        project = self.themes_dir / tid
+        refs: set[str] = set()
+        for item in config.get("library") or []:
+            if isinstance(item, dict):
+                refs.add(str(item.get("video") or ""))
+        for value in (config.get("videos") or {}).values():
+            refs.add(str(value or ""))
+        for node in (config.get("flow") or {}).get("nodes") or []:
+            if isinstance(node, dict):
+                refs.add(str(node.get("video") or ""))
+        for rel in refs:
+            rel = rel.replace("\\", "/").lstrip("./")
+            if not rel.startswith("videos/") or ".." in rel.split("/"):
+                continue
+            source = project / rel
+            if not source.is_file():
+                continue
+            target = self.video_dir / Path(rel).name
+            try:
+                if target.is_file() and target.stat().st_size == source.stat().st_size:
+                    continue
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+            except OSError as exc:
+                logger.warning(f"大肥鱼的小屋同步项目素材失败 {rel}: {exc}")
+
+    async def _hot_apply_project(self, theme: dict, tid: str = "") -> bool:
+        """当前项目热更新：只替换画布/素材库，不重载视频、不重置桌宠状态。"""
+        config = theme.get("config") or {}
+        if tid:
+            self._sync_project_media(tid, config)
+        flow = self._normalize_flow(config.get("flow") or {})
+        if not self._flow_has_loop(flow):
+            return False
+        self.flow = flow
+        self._ensure_task_graph(self.flow)
+        self._ensure_wait_edges()
+        if isinstance(config.get("library"), list):
+            self.library = [dict(x) for x in config["library"] if isinstance(x, dict)]
+        self._ensure_library()
+        settings = config.get("settings") or {}
+        if settings.get("crossfade_ms") is not None:
+            try:
+                self.settings["crossfade_ms"] = int(settings["crossfade_ms"])
+            except (TypeError, ValueError):
+                pass
+        if str(self.state.get("mode") or "") == "flow":
+            node_id = str(self.state.get("node_id") or "")
+            valid_ids = {str(n.get("id") or "") for n in self.flow.get("nodes", [])}
+            if node_id and node_id not in valid_ids:
+                start = next((n for n in self.flow.get("nodes", []) if n.get("loop")), None)
+                if start:
+                    await self.flow_goto(str(start.get("id") or ""))
+        self._resync_current_flow_node()
+        self._write_config()
+        await self._sync_public()
+        return True
+
     async def _apply_theme_id(self, tid: str) -> bool:
         if not re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", tid or ""):
             return False
@@ -2556,6 +2662,13 @@ class FishHousePlugin(Star):
                 nodes[0] if nodes else None,
             )
             if start and await self.flow_goto(str(start.get("id") or "")):
+                return True
+        # 已经是画布模式时，应用同一套/兼容主题不要强行踢回休息；
+        # 否则用户保存项目/应用主题后，正在播放的节点和 11 点睡衣状态会一起消失。
+        if str(self.state.get("mode") or "") == "flow":
+            node = self._flow_node(str(self.state.get("node_id") or ""))
+            if node is not None:
+                self._resync_current_flow_node()
                 return True
         await self.force_rest()
         return True
@@ -2812,9 +2925,12 @@ class FishHousePlugin(Star):
             (project / "theme.json").write_text(
                 json.dumps(theme, ensure_ascii=False, indent=2), encoding="utf-8"
             )
-            if bool(payload.get("apply")) and tid == self.active_theme_id:
-                await self._apply_theme_id(tid)
-            return self._ok(project=self._project_payload(tid))
+            hot = False
+            if tid == self.active_theme_id:
+                # 当前正在使用的项目：保存就热更新画布/素材，不再依赖前端是否带 apply。
+                # 只换画布与素材文件，不整包重载、不 force_rest，避免桌宠被踢回窝。
+                hot = await self._hot_apply_project(theme, tid)
+            return self._ok(project=self._project_payload(tid), applied=hot)
         if action == "asset_delete":
             project = self._project_dir(tid)
             if not project:

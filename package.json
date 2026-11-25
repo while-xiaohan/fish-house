@@ -8,6 +8,7 @@
   "icon": "./icon-sleepwear.png",
   "exports": {
     ".": "./lib/index.js",
+    "./client": "./lib/client.js",
     "./icon": "./icon-sleepwear.png",
     "./package.json": "./package.json"
   },
@@ -30,7 +31,16 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     },
-    "icon": "./icon-sleepwear.png"
+    "icon": "./icon-sleepwear.png",
+    "client": {
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ],
+      "platform": "web"
+    }
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*"

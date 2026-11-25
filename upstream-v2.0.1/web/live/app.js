@@ -23,6 +23,7 @@
   let pollBusy = false;
   let timerId = null;
   let currentFlowNode = "";
+  let currentFlowVideo = "";
   let soundOn = true;
   let soundBlocked = false;
   let soundHintTimer = null;
@@ -293,6 +294,8 @@
 
   async function runRest() {
     currentFlowNode = "";
+    currentFlowVideo = "";
+    currentFlowVideo = "";
     currentMode = "rest";
     setEmpty(!srcFor("rest"), "还没有导入休息视频，先去插件面板导入吧");
     if (!srcFor("rest")) return;
@@ -423,6 +426,7 @@
     cancelPendingOnce();
     currentMode = "flow";
     currentFlowNode = String(state.node_id || "");
+    currentFlowVideo = video;
     setStatus(String(state.node_label || "动作"));
     videos.__flow__ = video;
     const loop = Boolean(state.node_loop);
@@ -492,7 +496,7 @@
         void playCustomAction(String(state.action_key || ""), Boolean(state.action_loop));
       } else if (mode === "flow") {
         pendingAfterPhone = "";
-        if (currentFlowNode !== String(state.node_id || "")) {
+        if (currentFlowNode !== String(state.node_id || "") || currentFlowVideo !== String(state.node_video || "")) {
           void playFlowNode(state);
         }
       } else if (mode === "rest") {
