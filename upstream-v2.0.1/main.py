@@ -904,9 +904,91 @@ class FishHousePlugin(Star):
     # 画布模式下「收到消息」的走法：找一条通向「拿手机」的出边，播完拿手机再进
     # 「回消息」循环，隔一会儿自己走到「放下手机」。没有这些节点就直接忽略。
     _FLOW_PICK_WORDS = ("拿手机", "拿起手机", "伸手")
-    _FLOW_PHONE_WORDS = ("回消息", "玩手机", "看手机")
-    _FLOW_PUT_WORDS = ("放下", "放手机")
-    _FLOW_BUSY_WORDS = ("电脑", "干活", "工作")
+    _FLOW_PHONE_WORDS = ("回消息", "玩手机", "看手机", "收到消息", "收消息")
+    _FLOW_PUT_WORDS = ("放下", "放手机", "放下手机")
+    _FLOW_BUSY_WORDS = ("电脑", "干活", "工作", "打字")
+    _FLOW_WORK_WORDS = ("干活", "工作", "电脑", "打字", "忙碌")
+    _FLOW_IDLE_WORDS = ("休息", "等待", "待机", "吃零食", "发呆", "空闲")
+    _FLOW_PAJAMA_WORDS = ("睡衣", "睡觉", "躺下睡")
+
+    def _flow_nodes(self) -> list[dict[str, Any]]:
+        return [
+            node for node in (self.flow.get("nodes") or [])
+            if isinstance(node, dict) and node.get("id")
+        ]
+
+    def _flow_label(self, node: dict[str, Any]) -> str:
+        return str(node.get("label") or "")
+
+    def _flow_role(self, node: dict[str, Any]) -> str:
+        return str(node.get("role") or "")
+
+    def _flow_find_label(self, words: tuple[str, ...]) -> dict[str, Any] | None:
+        for node in self._flow_nodes():
+            label = self._flow_label(node)
+            if any(word in label for word in words):
+                return node
+        return None
+
+    def flow_idle_node(self) -> dict[str, Any] | None:
+        """当前主题的默认等待节点：优先 wait 角色 + 循环 + 休息类标签。"""
+        nodes = self._flow_nodes()
+        for node in nodes:
+            if (
+                self._flow_role(node) in {"wait", "idle"}
+                and bool(node.get("loop"))
+                and any(word in self._flow_label(node) for word in self._FLOW_IDLE_WORDS)
+            ):
+                return node
+        for node in nodes:
+            if bool(node.get("loop")) and any(
+                word in self._flow_label(node) for word in self._FLOW_IDLE_WORDS
+            ):
+                return node
+        for node in nodes:
+            if self._flow_role(node) in {"wait", "idle"} and bool(node.get("loop")):
+                return node
+        for node in nodes:
+            if bool(node.get("loop")):
+                return node
+        return None
+
+    def flow_work_node(self) -> dict[str, Any] | None:
+        """当前主题的干活节点：兼容 role=both_done/both/computer/work 或「干活」标签。"""
+        for node in self._flow_nodes():
+            role = self._flow_role(node)
+            label = self._flow_label(node)
+            if role in {"both_done", "both", "computer", "work"} or any(
+                word in label for word in self._FLOW_WORK_WORDS
+            ):
+                if any(word in label for word in self._FLOW_PUT_WORDS):
+                    continue
+                if "手机" in label or "消息" in label:
+                    continue
+                return node
+        return None
+
+    def flow_pajama_node(self) -> dict[str, Any] | None:
+        """当前主题的睡衣节点；新主题没有睡衣节点时返回 None（调度会跳过）。"""
+        for node in self._flow_nodes():
+            if str(node.get("id") or "") == "node_mwf81bs9":
+                return node
+            if any(word in self._flow_label(node) for word in self._FLOW_PAJAMA_WORDS):
+                return node
+        return None
+
+    def flow_day_node(self) -> dict[str, Any] | None:
+        for node in self._flow_nodes():
+            if str(node.get("id") or "") == "rest":
+                return node
+        return self.flow_idle_node()
+
+    def _flow_role_based(self) -> bool:
+        """没有 phone/computer 旧角色的新主题，才走 flow 语义。"""
+        roles = {self._flow_role(node) for node in self._flow_nodes()}
+        return bool(self.flow_work_node()) and not any(
+            role in {"phone", "computer"} for role in roles
+        )
 
     def _flow_reply_plan(self, node_id: str) -> dict[str, Any] | None:
         """按当前节点算一次「收消息」该走哪几步；算不出来返回 None。"""
@@ -1058,6 +1140,16 @@ class FishHousePlugin(Star):
         )
 
     async def work_ping(self, activity: str = "") -> None:
+        if self.state.get("mode") == "flow" and getattr(self, "_work_flow_node", ""):
+            if activity:
+                self._last_activity = str(activity).strip()
+                await self.set_bubble(str(activity).strip(), 0)
+            async with self._lock:
+                self.state["task_done"] = False
+                self.state["event"] = "work_ping"
+                self.state["updated_at"] = time.time()
+                self._write_state_locked()
+            return
         if self.state.get("mode") != "computer":
             return
         if activity:
@@ -1089,9 +1181,13 @@ class FishHousePlugin(Star):
         mode = self.state.get("mode") or "rest"
         if activity:
             self._last_activity = str(activity).strip()
-        if mode == "computer":
+        if mode == "computer" or (mode == "flow" and getattr(self, "_work_flow_node", "")):
             await self.work_ping(activity)
             return False
+        if self._flow_role_based() and self.flow_work_node() is not None:
+            await self.work_start(activity=activity)
+            self._schedule_arrival(umo, arrival_text, activity)
+            return True
         if not any(
             self.videos.get(key)
             for key in ("phone_pickup", "phone_loop", "phone_putdown")
@@ -1163,6 +1259,8 @@ class FishHousePlugin(Star):
         """等到桌宠真正走到电脑旁边（按视频时长估算），超时返回 False。"""
         deadline = time.time() + max(1.0, timeout)
         while time.time() < deadline:
+            if self.state.get("mode") == "flow" and getattr(self, "_work_flow_node", ""):
+                return True
             if self.state.get("mode") == "computer":
                 arrive_at = float(self.state.get("arrive_at") or 0)
                 if arrive_at <= 0 or time.time() >= arrive_at:
@@ -1200,9 +1298,22 @@ class FishHousePlugin(Star):
 
     async def work_start(self, *, auto: bool = False, activity: str = "") -> bool:
         self._last_activity = str(activity or "").strip()
-        if self.state.get("mode") == "computer":
+        if self.state.get("mode") == "computer" or (
+            self.state.get("mode") == "flow" and getattr(self, "_work_flow_node", "")
+        ):
             await self.work_ping(activity)
             return False
+        if self._flow_role_based():
+            node = self.flow_work_node()
+            if node is not None:
+                self.state["task_done"] = False
+                self._work_flow_node = str(node.get("id") or "")
+                await self.flow_goto(
+                    self._work_flow_node,
+                    text=activity or self._flow_label(node) or "在电脑前干活",
+                    loop=True,
+                )
+                return True
         self.state["task_done"] = False
         await self._set_state(
             "computer",
@@ -1221,6 +1332,29 @@ class FishHousePlugin(Star):
 
     async def work_end(self, *, force: bool = True) -> None:
         mode = self.state.get("mode")
+        if mode == "flow" and getattr(self, "_work_flow_node", ""):
+            if not force:
+                async with self._lock:
+                    self.state["task_done"] = True
+                    self.state["event"] = "work_done"
+                    self.state["bubble"] = "忙完啦，歇一会儿"
+                    self.state["bubble_until"] = time.time() + 8
+                    self.state["bubble_source"] = "auto"
+                    self.state["updated_at"] = time.time()
+                    self.state["seq"] = int(self.state.get("seq") or 0) + 1
+                    self._write_state_locked()
+                return
+            self._work_flow_node = ""
+            node = self.flow_idle_node()
+            if node is not None:
+                await self.flow_goto(
+                    str(node.get("id") or ""),
+                    text="忙完啦，回窝里歇着",
+                    loop=True,
+                )
+                return
+            await self.force_rest()
+            return
         if mode not in {"computer", "phone"}:
             return
         if mode == "phone" and self.state.get("after_phone") == "computer" and not force:
@@ -1257,6 +1391,16 @@ class FishHousePlugin(Star):
 
     async def force_rest(self) -> None:
         self._last_activity = ""
+        if self.state.get("mode") == "flow":
+            self._work_flow_node = ""
+            node = self.flow_idle_node()
+            if node is not None:
+                await self.flow_goto(
+                    str(node.get("id") or ""),
+                    text="回窝里歇着",
+                    loop=True,
+                )
+                return
         await self._set_state(
             "rest",
             "rest",
@@ -1601,12 +1745,15 @@ class FishHousePlugin(Star):
         self._tasks.add(track_task)
         track_task.add_done_callback(self._tasks.discard)
 
-    async def flow_goto(self, node_id: str, *, text: str = "", umo: str = "") -> bool:
+    async def flow_goto(
+        self, node_id: str, *, text: str = "", umo: str = "", loop: bool | None = None
+    ) -> bool:
         node = self._flow_node(str(node_id or "").strip())
         if node is None:
             return False
         nid = node["id"]
         video = self._node_video(node)
+        node_loop = bool(node.get("loop")) if loop is None else bool(loop)
         await self._set_state(
             "flow",
             "flow_node",
@@ -1614,10 +1761,10 @@ class FishHousePlugin(Star):
             bubble_until=0,
             node_id=nid,
             node_video=video,
-            node_loop=bool(node.get("loop")),
+            node_loop=node_loop,
             node_label=str(node.get("label") or nid),
         )
-        if not node.get("loop"):
+        if not node_loop:
             duration = float(node.get("duration") or 0)
             if duration <= 0:
                 item = self._library_item(str(node.get("media_id") or ""))
@@ -2275,6 +2422,16 @@ class FishHousePlugin(Star):
             node_id = str(payload.get("node_id") or payload.get("name") or "")
             if not await self.flow_goto(node_id):
                 return error_response("节点不存在")
+        elif action in {"pajama", "睡衣"}:
+            node = self.flow_pajama_node()
+            if node is None:
+                return error_response("当前主题没有睡衣节点")
+            await self.flow_goto(str(node.get("id") or ""))
+        elif action in {"day", "日常", "起床"}:
+            node = self.flow_day_node()
+            if node is None:
+                return error_response("当前主题没有日常休息节点")
+            await self.flow_goto(str(node.get("id") or ""))
         else:
             return error_response("未知动作")
         return self._ok(state=dict(self.state))
@@ -2618,6 +2775,7 @@ class FishHousePlugin(Star):
         if not theme_file.is_file():
             return False
         theme = theme_store.read_theme_json(theme_file)
+        self._work_flow_node = ""
         config = await asyncio.to_thread(
             theme_store.materialize_theme, theme, theme_dir, self.video_dir, tid
         )

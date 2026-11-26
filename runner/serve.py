@@ -283,13 +283,10 @@ def make_handler(server: FishHouseServer, loop: asyncio.AbstractEventLoop):
 
 
 # ---------------------------------------------------------------- 睡衣模式调度
-# 「大肥鱼的小屋 睡衣版」这套主题里，睡衣状态用这两个节点：
-#   node_mwf81bs9 = 换睡衣休息（穿上睡衣躺下）
-#   rest          = 日常衣服休息（白天的默认等待态）
+# 不再写死某一个主题的节点 id：按当前主题画布里的「睡衣 / 休息」标签找节点。
+# 新主题如果没有睡衣节点（比如「小肥鱼的零食」），调度自动跳过，不再每 20 秒失败。
 PAJAMA_START_HOUR = 23          # 晚上 11 点自动换睡衣
 PAJAMA_END_HOUR = 7             # 早上 7 点自动换回日常
-PAJAMA_NODE = "node_mwf81bs9"
-DAY_NODE = "rest"
 
 
 def want_pajama(now=None) -> bool:
@@ -302,23 +299,35 @@ def want_pajama(now=None) -> bool:
 def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
     """到点切睡衣/切回日常；状态被保存项目等操作打回休息时，也会自动补切。"""
     state = {"pajama": None}
-    pajama_nodes = {
-        "node_mwf81bs9",  # 换睡衣休息
-        "node_mwf81bw5",  # 睡衣状态循环等待
-        "node_mwf81bo2",  # 睡衣状态拿手机
-        "node_mwf825z4",  # 睡衣状态回消息
-        "node_mwf82t63",  # 睡衣状态放下手机
-    }
+
+    def pajama_node() -> str:
+        try:
+            node = server.plugin.flow_pajama_node()
+            return str((node or {}).get("id") or "")
+        except Exception:  # noqa: BLE001
+            return ""
+
+    def day_node() -> str:
+        try:
+            node = server.plugin.flow_day_node()
+            return str((node or {}).get("id") or "")
+        except Exception:  # noqa: BLE001
+            return ""
 
     def switching_state() -> tuple[bool, str, str]:
         plugin = server.plugin
         mode = str(plugin.state.get("mode") or "")
         node = str(plugin.state.get("node_id") or "")
         label = str(plugin.state.get("node_label") or "")
-        is_pajama = mode == "flow" and (node in pajama_nodes or "睡衣" in label)
+        is_pajama = mode == "flow" and (
+            node == pajama_node() or "睡衣" in label
+        )
         return is_pajama, mode, node
 
     def switch(node_id: str, reason: str) -> None:
+        if not node_id:
+            return
+
         async def go():
             try:
                 await server.plugin.flow_goto(node_id)
@@ -331,6 +340,13 @@ def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
     def run() -> None:
         while True:
             try:
+                sleep_node = pajama_node()
+                day = day_node()
+                if not sleep_node:
+                    # 当前主题没有睡衣节点，直接跳过整套调度。
+                    state["pajama"] = None
+                    time.sleep(20)
+                    continue
                 want = want_pajama()
                 first = state["pajama"] is None
                 is_pajama, _mode, _node = switching_state()
@@ -340,16 +356,16 @@ def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
                     state["pajama"] = True
                     if not is_pajama:
                         switch(
-                            PAJAMA_NODE,
+                            sleep_node,
                             "启动时按当前时间补一次"
                             if first
                             else f"{PAJAMA_START_HOUR} 点后检测到不在睡衣状态，补切",
                         )
                 else:
                     state["pajama"] = False
-                    if is_pajama:
+                    if is_pajama and day:
                         switch(
-                            DAY_NODE,
+                            day,
                             "启动时按当前时间补一次"
                             if first
                             else f"{PAJAMA_END_HOUR} 点后检测到还在睡衣状态，切回日常",

@@ -177,7 +177,7 @@
                 </div>
                 <div class="pfield"><span>介绍</span><el-input v-model="projectForm.description" type="textarea" :rows="2" maxlength="2000" show-word-limit placeholder="这个主题适合什么场景、包含哪些动作"></el-input></div>
                 <div class="project-actions">
-                  <span class="muted">保存只写入项目，点「应用为桌宠」才会覆盖线上</span>
+                  <span class="muted">保存当前项目会实时同步到桌宠；只有把其他项目切成桌宠时才点「应用为桌宠」</span>
                   <div class="head-actions">
                     <button class="btn" type="button" @click="saveProjectMeta">保存信息</button>
                     <button class="btn" type="button" @click="exportProject">导出项目</button>

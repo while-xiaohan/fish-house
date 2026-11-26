@@ -12,15 +12,13 @@ const HOST = '127.0.0.1';
 const PORT = 8899;
 const TIMEOUT_MS = 500;
 
-// 节点 id（来自「大肥鱼的小屋 睡衣版」这套主题的流程图）
-const PAJAMA_NODE = 'node_mwf81bs9'; // 换睡衣休息
-const DAY_NODE = 'rest'; // 日常衣服休息
+// 不再写死某个主题的节点 id：只发语义动作，由小屋按当前主题画布解析节点。
+// 这样换成「小肥鱼的零食」这类没有旧睡衣节点的主题时，不会去切一个不存在的节点。
 
 const PAJAMA_WORDS = ['换睡衣', '睡衣', '睡觉', '去睡', '躺下睡'];
 const DAY_WORDS = ['起床', '换衣服', '穿上衣服', '睡醒了'];  // 别用「上班/干活」这类泛词，聊天里随便一提就把睡衣态切走了
 
 let lastAt = 0;
-let lastFlowAt = 0;
 
 function post(payload) {
   try {
@@ -45,20 +43,12 @@ function post(payload) {
   }
 }
 
-function notify(action, extra) {
+function notify(action, extra, force = false) {
   const now = Date.now();
-  // 连发多条消息时没必要每条都打一次
-  if (now - lastAt < 300) return;
+  // 连发多条消息时没必要每条都打一次；睡衣/起床口令要单独放行，避免把 reply 挤掉
+  if (!force && now - lastAt < 300) return;
   lastAt = now;
   post({ action, ...(extra || {}) });
-}
-
-// 切换到某个节点：单独限流，避免和上面的 reply 互相挤掉
-function flowGoto(nodeId) {
-  const now = Date.now();
-  if (now - lastFlowAt < 1500) return;
-  lastFlowAt = now;
-  post({ action: 'flow_goto', node_id: nodeId });
 }
 
 module.exports = {
@@ -68,9 +58,9 @@ module.exports = {
       const message = (input && input.message) || {};
       const text = String(message.text || '');
       if (PAJAMA_WORDS.some((word) => text.includes(word))) {
-        flowGoto(PAJAMA_NODE);
+        notify('pajama', {}, true);
       } else if (DAY_WORDS.some((word) => text.includes(word))) {
-        flowGoto(DAY_NODE);
+        notify('day', {}, true);
       }
       const who = String(message.senderName || message.chatTitle || '').slice(0, 20);
       notify('reply', who ? { text: who } : {});
