@@ -298,7 +298,9 @@ def want_pajama(now=None) -> bool:
 
 def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
     """到点切睡衣/切回日常；状态被保存项目等操作打回休息时，也会自动补切。"""
-    state = {"pajama": None}
+    state = {"pajama": None, "action_since": 0.0}
+    SLEEP_ACTION_WORDS = ("回消息", "拿手机", "拿起手机", "放下手机")
+    SLEEP_ACTION_TIMEOUT = 90.0     # 睡衣动作节点卡住超过 90 秒就拉回睡衣等待
 
     def pajama_node() -> str:
         try:
@@ -350,6 +352,25 @@ def start_pajama_scheduler(server: "FishHouseServer", loop) -> threading.Thread:
                 want = want_pajama()
                 first = state["pajama"] is None
                 is_pajama, _mode, _node = switching_state()
+                plugin = server.plugin
+                label = str(plugin.state.get("node_label") or "")
+                mode = str(plugin.state.get("mode") or "")
+                sleepy_action = (
+                    mode == "flow"
+                    and "睡衣" in label
+                    and any(word in label for word in SLEEP_ACTION_WORDS)
+                )
+                if sleepy_action:
+                    if not state["action_since"]:
+                        state["action_since"] = time.monotonic()
+                    elif (
+                        want
+                        and time.monotonic() - state["action_since"] >= SLEEP_ACTION_TIMEOUT
+                    ):
+                        switch(sleep_node, "睡衣动作卡住超过 90 秒，拉回睡衣等待")
+                        state["action_since"] = 0.0
+                else:
+                    state["action_since"] = 0.0
 
                 if want:
                     # 11 点后如果因为保存项目/应用主题被踢回日常休息，20 秒内补回睡衣。

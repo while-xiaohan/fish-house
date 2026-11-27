@@ -515,3 +515,28 @@ html, body { height: 100%; overflow: hidden; }
 .theme-stats .stat-btn b, .theme-stats .stat-item b { font-size: 12px; line-height: 1; }
 .theme-stats .stat-ico { font-size: 14px; line-height: 1; }
 .theme-stats .stat-btn small, .theme-stats .stat-item small { display: none; }
+/* 画布节点右键菜单 */
+.ctx-menu {
+  position: fixed;
+  z-index: 3000;
+  min-width: 138px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface, #fffdf8);
+  border: 1px solid #d8cbb4;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(60, 45, 25, .18);
+  font-size: 13px;
+}
+.ctx-menu li {
+  padding: 8px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: #4a3f31;
+  white-space: nowrap;
+  user-select: none;
+}
+.ctx-menu li:hover { background: #f2e9d8; }
+.ctx-menu li.danger { color: #b4453a; }
+.ctx-menu li.danger:hover { background: #fbe9e6; }

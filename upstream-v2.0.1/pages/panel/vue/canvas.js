@@ -6,6 +6,7 @@ window.CanvasPanel = {
       nodes: [], edges: [], sizes: {}, nodeEls: {},
       view: { x: 24, y: 24, scale: 1 },
       selectedId: "", selectedEdgeId: "", link: null, drag: null, pan: null, fitDone: false, rightRail: 1150,
+      menu: null, saveTimer: null, suppressSave: false,
     };
   },
   computed: {
@@ -28,17 +29,22 @@ window.CanvasPanel = {
   },
   watch: {
     flow: { deep: true, handler(value) { if (value) this.loadFlow(value); } },
+    nodes: { deep: true, handler() { this.queueSave(); } },
+    edges: { deep: true, handler() { this.queueSave(); } },
   },
   mounted() {
     this.loadFlow(this.flow || { nodes: [], edges: [] });
     window.addEventListener("mousemove", this.onMove);
     window.addEventListener("mouseup", this.onUp);
     window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("mousedown", this.onGlobalDown);
   },
   beforeUnmount() {
     window.removeEventListener("mousemove", this.onMove);
     window.removeEventListener("mouseup", this.onUp);
     window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("mousedown", this.onGlobalDown);
+    clearTimeout(this.saveTimer);
   },
   methods: {
     nodeCopies(node) {
@@ -77,6 +83,7 @@ window.CanvasPanel = {
       }[role] || "动作：播一次后按出边继续";
     },
     loadFlow(flow) {
+      this.suppressSave = true;
       this.nodes = JSON.parse(JSON.stringify(flow.nodes || []));
       this.edges = JSON.parse(JSON.stringify(flow.edges || []));
       for (const node of this.nodes) {
@@ -88,7 +95,7 @@ window.CanvasPanel = {
       this.$nextTick(() => {
         this.measure();
         if (!this.fitDone) { this.fit(); this.fitDone = true; }
-        setTimeout(() => this.refit(), 220);
+        setTimeout(() => { this.refit(); this.suppressSave = false; }, 220);
       });
     },
     measure() {
@@ -290,6 +297,64 @@ window.CanvasPanel = {
       await this.save(true);
       this.toast("已删除连线");
     },
+    onGlobalDown(event) {
+      if (!this.menu) return;
+      if (event.target && event.target.closest && event.target.closest(".ctx-menu")) return;
+      this.closeMenu();
+    },
+    openNodeMenu(node, event) {
+      if (this.readonly) return;
+      this.selectedId = node.id;
+      this.selectedEdgeId = "";
+      this.drag = null;
+      this.pan = null;
+      this.menu = { kind: "node", nodeId: node.id, x: event.clientX, y: event.clientY };
+    },
+    openEdgeMenu(edge, event) {
+      if (this.readonly) return;
+      this.selectedEdgeId = edge.id;
+      this.selectedId = "";
+      this.drag = null;
+      this.pan = null;
+      this.menu = { kind: "edge", edgeId: edge.id, x: event.clientX, y: event.clientY };
+    },
+    closeMenu() {
+      this.menu = null;
+    },
+    copyNode() {
+      const node = this.menu && this.nodes.find((n) => n.id === this.menu.nodeId);
+      this.closeMenu();
+      if (!node) return;
+      const copy = JSON.parse(JSON.stringify(node));
+      copy.id = `node_${Date.now().toString(36)}`;
+      copy.label = `${node.label || "节点"}（副本）`.slice(0, 40);
+      copy.x = Math.round(Number(node.x || 0) + 36);
+      copy.y = Math.round(Number(node.y || 0) + 32);
+      this.nodes.push(copy);
+      this.$nextTick(() => { this.measure(); this.selectedId = copy.id; });
+      this.queueSave();
+      this.toast(`已复制节点「${node.label}」`);
+    },
+    async deleteNodeWithConfirm() {
+      const node = this.menu && this.nodes.find((n) => n.id === this.menu.nodeId);
+      this.closeMenu();
+      if (!node) return;
+      if (!(await this.confirm("删除节点", `删除节点「${node.label}」？`, true))) return;
+      await this.removeNode(node);
+      this.toast(`已删除节点「${node.label}」`);
+    },
+    async deleteEdgeWithConfirm() {
+      const edgeId = this.menu && this.menu.edgeId;
+      this.closeMenu();
+      if (!edgeId) return;
+      if (!(await this.confirm("删除连线", "删除这条连线？", true))) return;
+      await this.deleteEdgeNow(edgeId);
+    },
+    queueSave() {
+      if (this.readonly || this.suppressSave) return;
+      clearTimeout(this.saveTimer);
+      this.saveTimer = setTimeout(() => { this.save(true); }, 600);
+    },
     async save(silent = false) {
       if (this.projectMode) {
         this.$emit("save-project", { nodes: this.nodes, edges: this.edges });
@@ -332,7 +397,7 @@ window.CanvasPanel = {
   template: `
     <section class="tab-page canvas-page" :class="{ preview: readonly }">
       <div class="page-head" v-if="!readonly">
-        <div><h2>动作画布</h2><p class="muted">拖节点、从圆点拉线；点节点或连线选中后按 Delete，右键也可删除。</p></div>
+        <div><h2>动作画布</h2><p class="muted">拖节点、从圆点拉线；选中后按 Delete 删除，右键弹出「复制 / 删除」菜单。改动会随手保存，不用再点「保存画布」。</p></div>
         <div class="head-actions">
           <button class="btn" type="button" @click="addNode">新增节点</button>
           <button class="btn" type="button" @click="generate" v-if="!projectMode">重新生成</button>
@@ -347,7 +412,7 @@ window.CanvasPanel = {
             <svg class="edges" width="4000" height="3000">
               <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#c8b79d"></path></marker></defs>
               <g v-for="edge in edges" :key="edge.id">
-                <path :d="edgePath(edge)" fill="none" stroke="transparent" stroke-width="14" class="edge-hit" @click.stop="selectEdge(edge)" @contextmenu.prevent.stop="deleteEdgeNow(edge.id)"></path>
+                <path :d="edgePath(edge)" fill="none" stroke="transparent" stroke-width="14" class="edge-hit" @click.stop="selectEdge(edge)" @contextmenu.prevent.stop="openEdgeMenu(edge, $event)"></path>
                 <path :d="edgePath(edge)" fill="none" :stroke="edge.id === selectedEdgeId ? '#3f6f7e' : '#c8b79d'" :stroke-width="edge.id === selectedEdgeId ? 3 : 2" marker-end="url(#arrow)" pointer-events="none"></path>
               </g>
               <path v-if="link" :d="linkPath()" fill="none" stroke="#4f7d8c" stroke-width="2" stroke-dasharray="5 4"></path>
@@ -356,7 +421,7 @@ window.CanvasPanel = {
               <div v-for="copy in nodeCopies(node)" :key="copy" :ref="el => setNodeRef(node.id, el)"
                 class="fnode" :class="['role-' + (node.role || 'action'), { current: node.id === currentId, 'wait-left': node.role === 'wait' && copy === 'left', 'wait-right': node.role === 'wait' && copy === 'right' }]"
                 :style="{ left: nodeLeft(node, copy) + 'px', top: node.y + 'px' }"
-                @mousedown.stop="startNodeDrag(node, $event, copy)" @mouseup.stop.prevent="onNodeUp(node)" @click.stop="selectNode(node)" @contextmenu.prevent.stop="deleteNodeNow(node)">
+                @mousedown.stop="startNodeDrag(node, $event, copy)" @mouseup.stop.prevent="onNodeUp(node)" @click.stop="selectNode(node)" @contextmenu.prevent.stop="openNodeMenu(node, $event)">
                 <span v-if="node.role === 'wait' && copy === 'left'" class="wait-side left">收到消息</span>
                 <span v-if="node.role === 'wait' && copy === 'right'" class="wait-side right">完成任务</span>
                 <div class="fnode-title">{{ node.label }}</div>
@@ -403,5 +468,13 @@ window.CanvasPanel = {
           </div>
         </aside>
       </div>
+      <ul v-if="menu" class="ctx-menu" :style="{ left: menu.x + 'px', top: menu.y + 'px' }">
+        <template v-if="menu.kind === 'node'">
+          <li @click="copyNode">复制节点</li>
+          <li class="danger" @click="deleteNodeWithConfirm">删除节点</li>
+        </template>
+        <li v-else class="danger" @click="deleteEdgeWithConfirm">删除连线</li>
+        <li @click="closeMenu">取消</li>
+      </ul>
     </section>`,
 };

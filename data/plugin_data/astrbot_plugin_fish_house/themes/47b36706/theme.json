@@ -170,32 +170,6 @@
     "flow": {
       "nodes": [
         {
-          "id": "rest",
-          "label": "日常衣服休息",
-          "video": "videos/theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-aigc1080.mp4",
-          "loop": true,
-          "role": "wait",
-          "prompt": "这个节点是日常躺床上休息状态",
-          "note": "",
-          "duration": 12.096,
-          "media_id": "m_7953da58",
-          "x": 80,
-          "y": 220
-        },
-        {
-          "id": "phone_pickup",
-          "label": "日常衣服拿起手机",
-          "video": "videos/theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-aigc1080.mp4",
-          "loop": false,
-          "role": "action",
-          "prompt": "",
-          "note": "",
-          "duration": 4.064,
-          "media_id": "m_11fe77a0",
-          "x": 330,
-          "y": 80
-        },
-        {
           "id": "phone_loop",
           "label": "日常衣服回消息",
           "video": "videos/theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-aigc1080.mp4",
@@ -205,8 +179,8 @@
           "note": "",
           "duration": 8.064,
           "media_id": "m_b6678b62",
-          "x": 580,
-          "y": 80
+          "x": 585,
+          "y": 74
         },
         {
           "id": "phone_putdown",
@@ -292,7 +266,7 @@
           "video": "videos/asset_aac45d74e33e41aa98055be3e6e6763a-508bf8-aigc1080.mp4",
           "loop": true,
           "role": "wait",
-          "prompt": "睡觉休息状态，平时休息不用这个",
+          "prompt": "睡觉休息状态，平时休息不用这个，11点自动换睡衣版，或者发消息huan",
           "note": "",
           "duration": 15.071995,
           "media_id": "m_5f344be2",
@@ -337,37 +311,52 @@
           "media_id": "m_868cecce",
           "x": 550,
           "y": 625
+        },
+        {
+          "id": "node_mwxw63ed",
+          "label": "日常衣服拿起手机",
+          "video": "videos/theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-aigc1080.mp4",
+          "loop": false,
+          "role": "action",
+          "prompt": "",
+          "note": "",
+          "duration": 4.064,
+          "media_id": "m_11fe77a0",
+          "x": 341,
+          "y": 80
+        },
+        {
+          "id": "node_mwxw8ush",
+          "label": "日常衣服休息等待",
+          "video": "videos/theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-aigc1080.mp4",
+          "loop": false,
+          "role": "action",
+          "prompt": "7点自动换成日常衣服，也可以发微信换，循环休息等待",
+          "note": "",
+          "duration": 12.096,
+          "media_id": "m_7953da58",
+          "x": 17,
+          "y": 215
+        },
+        {
+          "id": "node_mwxwbi6o",
+          "label": "日常衣服休息等待",
+          "video": "videos/theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-aigc1080.mp4",
+          "loop": false,
+          "role": "action",
+          "prompt": "7点自动换成日常衣服，也可以发微信换，循环休息等待",
+          "note": "",
+          "duration": 12.096,
+          "media_id": "m_7953da58",
+          "x": 1124,
+          "y": 167
         }
       ],
       "edges": [
         {
-          "id": "e_rest_phone",
-          "from": "rest",
-          "to": "phone_pickup",
-          "label": "有人找、要回消息"
-        },
-        {
-          "id": "e_rest_comp",
-          "from": "rest",
-          "to": "computer_go",
-          "label": "要干活、查资料、刷抖音"
-        },
-        {
-          "id": "e_pick_loop",
-          "from": "phone_pickup",
-          "to": "phone_loop",
-          "label": ""
-        },
-        {
           "id": "e_loop_put",
           "from": "phone_loop",
           "to": "phone_putdown",
-          "label": ""
-        },
-        {
-          "id": "e_put_rest",
-          "from": "phone_putdown",
-          "to": "rest",
           "label": ""
         },
         {
@@ -381,12 +370,6 @@
           "from": "computer_loop",
           "to": "computer_rest",
           "label": "活干完了"
-        },
-        {
-          "id": "e_crest_rest",
-          "from": "computer_rest",
-          "to": "rest",
-          "label": ""
         },
         {
           "id": "e_put_computer",
@@ -452,6 +435,36 @@
           "id": "e_mwfaddtf",
           "from": "computer_go",
           "to": "computer_rest",
+          "label": ""
+        },
+        {
+          "id": "e_mwxw6y7l",
+          "from": "node_mwxw63ed",
+          "to": "phone_loop",
+          "label": ""
+        },
+        {
+          "id": "e_mwxwawo7",
+          "from": "node_mwxw8ush",
+          "to": "node_mwxw63ed",
+          "label": ""
+        },
+        {
+          "id": "e_mwxwazwi",
+          "from": "node_mwxw8ush",
+          "to": "computer_go",
+          "label": ""
+        },
+        {
+          "id": "e_mwxwcqij",
+          "from": "phone_putdown",
+          "to": "node_mwxwbi6o",
+          "label": ""
+        },
+        {
+          "id": "e_mwxwcyea",
+          "from": "computer_rest",
+          "to": "node_mwxwbi6o",
           "label": ""
         }
       ]

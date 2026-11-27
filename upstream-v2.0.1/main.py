@@ -969,19 +969,79 @@ class FishHousePlugin(Star):
         return None
 
     def flow_pajama_node(self) -> dict[str, Any] | None:
-        """当前主题的睡衣节点；新主题没有睡衣节点时返回 None（调度会跳过）。"""
-        for node in self._flow_nodes():
+        """当前主题的睡衣节点；新主题没有睡衣节点时返回 None（调度会跳过）。
+
+        旧版这里在同一个循环里先判断固定 id、再判断标签，画布里「睡衣状态拿手机」
+        排在「换睡衣休息」前面时就会先命中拿手机节点，随后自动沿边走进
+        「睡衣状态回消息」的 loop 节点，整晚卡在回消息。固定 id 必须全表优先匹配。
+        """
+        nodes = self._flow_nodes()
+        # 1) 明确的睡衣过渡节点（旧睡衣主题的「换睡衣休息」）优先
+        for node in nodes:
             if str(node.get("id") or "") == "node_mwf81bs9":
                 return node
-            if any(word in self._flow_label(node) for word in self._FLOW_PAJAMA_WORDS):
+        # 2) 睡衣的循环等待/休息节点：绝不能落到拿手机、回消息、放下手机
+        for node in nodes:
+            label = self._flow_label(node)
+            if not any(word in label for word in self._FLOW_PAJAMA_WORDS):
+                continue
+            if any(word in label for word in ("手机", "消息", "放下", "拿", "收")):
+                continue
+            if self._flow_role(node) in {"wait", "idle"} and bool(node.get("loop")):
+                return node
+        for node in nodes:
+            label = self._flow_label(node)
+            if not any(word in label for word in self._FLOW_PAJAMA_WORDS):
+                continue
+            if any(word in label for word in ("手机", "消息", "放下", "拿", "收")):
+                continue
+            if any(word in label for word in ("等待", "循环", "休息", "躺", "睡")):
+                return node
+        # 3) 最后才退回任意睡衣节点，并排除动作类节点
+        for node in nodes:
+            label = self._flow_label(node)
+            if any(word in label for word in self._FLOW_PAJAMA_WORDS) and not any(
+                word in label for word in ("手机", "消息", "放下", "拿", "收")
+            ):
                 return node
         return None
 
     def flow_day_node(self) -> dict[str, Any] | None:
-        for node in self._flow_nodes():
+        """当前主题的「日常」节点（换回日常衣服用）。
+
+        旧版只找 id="rest"，新主题没有这个 id 就退到 flow_idle_node()，
+        而唯一的循环等待节点往往是「睡衣状态循环等待」，于是「换回日常」
+        实际跳回睡衣，看起来没反应。这里优先认标签里的「日常」。
+        """
+        nodes = self._flow_nodes()
+        for node in nodes:
             if str(node.get("id") or "") == "rest":
                 return node
-        return self.flow_idle_node()
+        # 1) 标签明确写着「日常」，排除睡衣与拿/放手机这类中间动作
+        for node in nodes:
+            label = self._flow_label(node)
+            if "日常" not in label and "日间" not in label:
+                continue
+            if any(word in label for word in self._FLOW_PAJAMA_WORDS):
+                continue
+            if any(word in label for word in ("手机", "消息", "放下", "拿")):
+                continue
+            return node
+        # 2) 日常的回消息/等待循环（老主题的 phone_loop 这类）
+        for node in nodes:
+            label = self._flow_label(node)
+            if any(word in label for word in self._FLOW_PAJAMA_WORDS):
+                continue
+            if self._flow_role(node) in {"phone", "wait", "idle"} and any(
+                word in label for word in ("回消息", "等待", "休息", "待机")
+            ):
+                return node
+        idle = self.flow_idle_node()
+        if idle is not None and not any(
+            word in self._flow_label(idle) for word in self._FLOW_PAJAMA_WORDS
+        ):
+            return idle
+        return None
 
     def _flow_role_based(self) -> bool:
         """没有 phone/computer 旧角色的新主题，才走 flow 语义。"""
@@ -2032,6 +2092,12 @@ class FishHousePlugin(Star):
                     flow_hint += (
                         "用户说累了、困了、回去躺着/睡觉时，"
                         '调用 house_flow_goto(node_id="lie_down") 先换衣服再躺下。'
+                    )
+                day_node = self.flow_day_node()
+                if day_node is not None:
+                    flow_hint += (
+                        "用户说「换回日常」「换回日常衣服」「起床」时，"
+                        f'立即调用 house_flow_goto(node_id="{day_node.get("id")}")，不要只口头答应。'
                     )
                 flow_hint += "需要切换动作节点时调用 house_flow_goto(node_id=...)。"
                 if "【流程图】" not in current:
