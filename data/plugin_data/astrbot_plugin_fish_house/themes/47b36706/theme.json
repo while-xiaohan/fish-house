@@ -133,7 +133,7 @@
       {
         "id": "m_eee0ef84",
         "name": "睡衣放下手机",
-        "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c-natural1080.mp4",
+        "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c-aigc1080.mp4",
         "duration": 5.056009
       },
       {
@@ -151,13 +151,13 @@
       {
         "id": "m_f22185cc",
         "name": "睡衣拿手机",
-        "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-natural1080.mp4",
+        "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-aigc1080.mp4",
         "duration": 5.056009
       },
       {
         "id": "m_868cecce",
         "name": "睡衣去工作",
-        "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-natural1080.mp4",
+        "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-aigc1080.mp4",
         "duration": 10.08
       },
       {
@@ -237,7 +237,7 @@
         {
           "id": "node_mwf81bo2",
           "label": "睡衣状态拿手机",
-          "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-natural1080.mp4",
+          "video": "videos/asset_74a317b170ed481fb536e2ab88b46ba8-2b53ae-aigc1080.mp4",
           "loop": false,
           "role": "action",
           "prompt": "",
@@ -289,7 +289,7 @@
         {
           "id": "node_mwf82t63",
           "label": "睡衣状态放下手机",
-          "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c-natural1080.mp4",
+          "video": "videos/asset_00186445a40c464882c759981f4a5409-05176c-aigc1080.mp4",
           "loop": false,
           "role": "transition",
           "prompt": "",
@@ -302,7 +302,7 @@
         {
           "id": "node_mwf83glz",
           "label": "睡衣状态换日常衣服去工作",
-          "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-natural1080.mp4",
+          "video": "videos/asset_01541a34f5e74af1b14ee6149d4c713b-0a4518-aigc1080.mp4",
           "loop": false,
           "role": "action",
           "prompt": "",
@@ -466,6 +466,12 @@
           "from": "computer_rest",
           "to": "node_mwxwbi6o",
           "label": ""
+        },
+        {
+          "id": "e_mwxwbi6o_loop",
+          "from": "node_mwxwbi6o",
+          "to": "phone_loop",
+          "label": "休息等待回消息"
         }
       ]
     },

@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "meta": {
+    "id": "50756926fc-3862de",
+    "name": "小肥鱼的零食",
+    "author": "",
+    "description": "",
+    "version": "1.0.0",
+    "created_at": 1795714242.08821,
+    "cover": "cover.jpg"
+  },
+  "config": {
+    "actions": [],
+    "videos": {},
+    "audio": {},
+    "durations": {},
+    "library": [
+      {
+        "id": "m_5938a3c5",
+        "name": "回消息",
+        "video": "videos/asset_1794316414-8b109c-natural1080-1e6286.mp4",
+        "duration": 5.056009
+      },
+      {
+        "id": "m_deae154c",
+        "name": "休息",
+        "video": "videos/asset_1794316415-ced776-natural1080-5f9c7f.mp4",
+        "duration": 4.062993
+      },
+      {
+        "id": "m_b69a515d",
+        "name": "回消息工作",
+        "video": "videos/asset_1794317636-273441-natural1080-fa0c83.mp4",
+        "duration": 3.542
+      },
+      {
+        "id": "m_ce3add8d",
+        "name": "收到消息",
+        "video": "videos/asset_1794319687-49a211-natural1080-42471f.mp4",
+        "duration": 3.877732
+      },
+      {
+        "id": "m_01d6b68d",
+        "name": "放下手机",
+        "video": "videos/asset_1794320123-b0617a-natural1080-815366.mp4",
+        "duration": 4.062993
+      }
+    ],
+    "flow": {
+      "nodes": [
+        {
+          "id": "wait_1",
+          "label": "吃零食",
+          "role": "wait",
+          "loop": true,
+          "video": "videos/asset_1794316415-ced776-natural1080-5f9c7f.mp4",
+          "media_id": "m_deae154c",
+          "prompt": "边吃零食边等待主人回消息",
+          "duration": 4.062993,
+          "x": 420,
+          "y": 220
+        },
+        {
+          "id": "node_mwapo6kh",
+          "label": "干活干活",
+          "video": "videos/asset_1794317636-273441-natural1080-fa0c83.mp4",
+          "loop": false,
+          "role": "both_done",
+          "prompt": "回主人消息",
+          "note": "",
+          "duration": 3.542,
+          "media_id": "m_b69a515d",
+          "x": 496,
+          "y": 120
+        },
+        {
+          "id": "node_mwarm5xy",
+          "label": "收到消息",
+          "video": "videos/asset_1794319687-49a211-natural1080-42471f.mp4",
+          "loop": false,
+          "role": "action",
+          "prompt": "",
+          "note": "",
+          "duration": 3.877732,
+          "media_id": "m_ce3add8d",
+          "x": 332,
+          "y": 362
+        },
+        {
+          "id": "node_mwarwecp",
+          "label": "放下手机",
+          "video": "videos/asset_1794320123-b0617a-natural1080-815366.mp4",
+          "loop": false,
+          "role": "action",
+          "prompt": "",
+          "note": "",
+          "duration": 4.062993,
+          "media_id": "m_01d6b68d",
+          "x": 759,
+          "y": 237
+        }
+      ],
+      "edges": [
+        {
+          "id": "e_mwarmcak",
+          "from": "wait_1",
+          "to": "node_mwarm5xy",
+          "label": ""
+        },
+        {
+          "id": "e_mwarmdkv",
+          "from": "node_mwarm5xy",
+          "to": "node_mwapo6kh",
+          "label": ""
+        },
+        {
+          "id": "e_mwarwgbv",
+          "from": "node_mwapo6kh",
+          "to": "node_mwarwecp",
+          "label": ""
+        },
+        {
+          "id": "e_mwarwhdy",
+          "from": "node_mwarwecp",
+          "to": "wait_1",
+          "label": ""
+        }
+      ]
+    },
+    "settings": {
+      "crossfade_ms": 400
+    }
+  }
+}

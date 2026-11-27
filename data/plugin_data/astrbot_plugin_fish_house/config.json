@@ -48,28 +48,54 @@
       {
         "id": "wait_1",
         "label": "吃零食",
-        "video": "videos/theme_50756926fc_asset_1794316415-ced776-soft1080.mp4",
+        "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
         "loop": true,
         "role": "wait",
         "prompt": "边吃零食边等待主人回消息",
         "note": "",
         "duration": 4.062993,
-        "media_id": "m_374fd51d",
+        "media_id": "m_389ed990",
         "x": 420.0,
         "y": 220.0
       },
       {
-        "id": "node_mwapo6kh",
-        "label": "干活干活",
-        "video": "videos/theme_50756926fc_asset_1794317636-273441-soft1080.mp4",
+        "id": "computer_go",
+        "label": "去电脑",
+        "video": "videos/theme_50756926fc_asset_pcgo-0a1b-soft1080.mp4",
         "loop": false,
-        "role": "both_done",
-        "prompt": "回主人消息",
+        "role": "transition",
+        "prompt": "",
         "note": "",
-        "duration": 3.542,
-        "media_id": "m_2213634c",
-        "x": 496.0,
-        "y": 120.0
+        "duration": 5.0,
+        "media_id": "m_pcgo0001",
+        "x": 300.0,
+        "y": 480.0
+      },
+      {
+        "id": "computer_loop",
+        "label": "玩电脑",
+        "video": "videos/theme_50756926fc_asset_pcloop-2c3d-soft1080.mp4",
+        "loop": true,
+        "role": "both",
+        "prompt": "",
+        "note": "",
+        "duration": 8.0,
+        "media_id": "m_pcloop002",
+        "x": 570.0,
+        "y": 480.0
+      },
+      {
+        "id": "computer_rest",
+        "label": "电脑回休息",
+        "video": "videos/theme_50756926fc_asset_pcrest-4e5f-soft1080.mp4",
+        "loop": false,
+        "role": "transition",
+        "prompt": "",
+        "note": "",
+        "duration": 5.0,
+        "media_id": "m_pcrest003",
+        "x": 830.0,
+        "y": 480.0
       },
       {
         "id": "node_mwarm5xy",
@@ -80,46 +106,77 @@
         "prompt": "",
         "note": "",
         "duration": 3.877732,
-        "media_id": "m_776c1a27",
+        "media_id": "m_ce3add8d",
         "x": 332.0,
         "y": 362.0
       },
       {
+        "id": "node_msgloop",
+        "label": "回消息",
+        "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
+        "loop": false,
+        "role": "action",
+        "prompt": "",
+        "note": "",
+        "duration": 5.056009,
+        "media_id": "m_4d04b060",
+        "x": 560.0,
+        "y": 600.0
+      },
+      {
         "id": "node_mwarwecp",
         "label": "放下手机",
-        "video": "videos/theme_50756926fc_asset_1794320123-b0617a-soft1080.mp4",
+        "video": "videos/theme_50756926fc_asset_1794320123-b0617a-sharp1080.mp4",
         "loop": false,
         "role": "action",
         "prompt": "",
         "note": "",
         "duration": 4.062993,
-        "media_id": "m_2c0373af",
+        "media_id": "m_01d6b68d",
         "x": 759.0,
         "y": 237.0
       }
     ],
     "edges": [
       {
-        "id": "e_mwarmcak",
+        "id": "e_wait_msg",
         "from": "wait_1",
         "to": "node_mwarm5xy",
-        "label": ""
+        "label": "收到消息"
       },
       {
-        "id": "e_mwarmdkv",
+        "id": "e_msg_loop",
         "from": "node_mwarm5xy",
-        "to": "node_mwapo6kh",
+        "to": "node_msgloop",
         "label": ""
       },
       {
-        "id": "e_mwarwgbv",
-        "from": "node_mwapo6kh",
+        "id": "e_loop_put",
+        "from": "node_msgloop",
         "to": "node_mwarwecp",
         "label": ""
       },
       {
-        "id": "e_mwarwhdy",
+        "id": "e_put_wait",
         "from": "node_mwarwecp",
+        "to": "wait_1",
+        "label": ""
+      },
+      {
+        "id": "e_go_loop",
+        "from": "computer_go",
+        "to": "computer_loop",
+        "label": "坐到电脑前"
+      },
+      {
+        "id": "e_loop_rest",
+        "from": "computer_loop",
+        "to": "computer_rest",
+        "label": "活干完了"
+      },
+      {
+        "id": "e_rest_wait",
+        "from": "computer_rest",
         "to": "wait_1",
         "label": ""
       }
@@ -127,76 +184,70 @@
   },
   "library": [
     {
-      "id": "m_82c55bbd",
+      "id": "m_5938a3c5",
       "name": "回消息",
-      "video": "videos/theme_50756926fc_asset_1794316414-8b109c-soft1080.mp4",
+      "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
       "duration": 5.056009
     },
     {
-      "id": "m_374fd51d",
+      "id": "m_deae154c",
       "name": "休息",
-      "video": "videos/theme_50756926fc_asset_1794316415-ced776-soft1080.mp4",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
       "duration": 4.062993
     },
     {
-      "id": "m_2213634c",
+      "id": "m_b69a515d",
       "name": "回消息工作",
       "video": "videos/theme_50756926fc_asset_1794317636-273441-soft1080.mp4",
       "duration": 3.542
     },
     {
-      "id": "m_776c1a27",
+      "id": "m_ce3add8d",
       "name": "收到消息",
       "video": "videos/theme_50756926fc_asset_1794319687-49a211-soft1080.mp4",
       "duration": 3.877732
     },
     {
-      "id": "m_2c0373af",
+      "id": "m_01d6b68d",
       "name": "放下手机",
-      "video": "videos/theme_50756926fc_asset_1794320123-b0617a-soft1080.mp4",
+      "video": "videos/theme_50756926fc_asset_1794320123-b0617a-sharp1080.mp4",
       "duration": 4.062993
     },
     {
-      "id": "m_fad4062b",
-      "name": "休息循环",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-aigc1080-1-2-3-4.mp4",
-      "duration": 12.096
-    },
-    {
-      "id": "m_8e6ea6c0",
-      "name": "拿起手机",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-ai-1-2-3-4-5.mp4",
-      "duration": 4.064
-    },
-    {
-      "id": "m_17ea4696",
-      "name": "玩手机 / 回消息",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-aigc-1-2-3-4.mp4",
-      "duration": 8.064
-    },
-    {
-      "id": "m_07262774",
-      "name": "放下手机",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-a-1-2-3-4-5.mp4",
-      "duration": 3.042
-    },
-    {
-      "id": "m_6969fff0",
+      "id": "m_pcgo0001",
       "name": "去电脑",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-aig-1-2-3-4.mp4",
-      "duration": 5.175
+      "video": "videos/theme_50756926fc_asset_pcgo-0a1b-soft1080.mp4",
+      "duration": 5.0
     },
     {
-      "id": "m_522e104b",
+      "id": "m_pcloop002",
       "name": "玩电脑 / 干活",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-a-1-2-3-4-5.mp4",
-      "duration": 15.072
+      "video": "videos/theme_50756926fc_asset_pcloop-2c3d-soft1080.mp4",
+      "duration": 8.0
     },
     {
-      "id": "m_159a81b3",
+      "id": "m_pcrest003",
       "name": "电脑回休息",
-      "video": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-a-1-2-3-4-5.mp4",
-      "duration": 10.08
+      "video": "videos/theme_50756926fc_asset_pcrest-4e5f-soft1080.mp4",
+      "duration": 5.0
+    },
+    {
+      "id": "m_97b47810",
+      "name": "休息循环",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_389ed990",
+      "name": "休息循环",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_4d04b060",
+      "name": "回消息",
+      "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
+      "duration": 5.056009
     }
   ],
   "theme_meta": {
@@ -208,31 +259,19 @@
   "active_theme_id": "50756926fc",
   "theme_market_url": "https://shop.swellengine.com/",
   "videos": {
-    "rest": "videos/theme_47b36706_theme_91dd19b1cd_rest-c86e5b-6539c4-41bcd2-82b558-aigc1080-1-2-3-4.mp4",
-    "phone_pickup": "videos/theme_47b36706_theme_91dd19b1cd_phone_pickup-d9129a-d0a620-bf57ca-c1c338-ai-1-2-3-4-5.mp4",
-    "phone_loop": "videos/theme_47b36706_theme_91dd19b1cd_phone_loop-e85353-00fdec-603f5a-474d64-aigc-1-2-3-4.mp4",
-    "phone_putdown": "videos/theme_47b36706_theme_91dd19b1cd_phone_putdown-93c608-0166f1-eb782a-053dfe-a-1-2-3-4-5.mp4",
-    "computer_go": "videos/theme_47b36706_theme_91dd19b1cd_computer_go-63a339-6381b2-c4dc57-12322b-aig-1-2-3-4.mp4",
-    "computer_loop": "videos/theme_47b36706_theme_91dd19b1cd_computer_loop-c07166-70e55c-0cd346-9cf259-a-1-2-3-4-5.mp4",
-    "computer_rest": "videos/theme_47b36706_theme_91dd19b1cd_computer_rest-08ff97-de9fad-77cfd0-fc30a9-a-1-2-3-4-5.mp4"
+    "rest": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4"
   },
   "audio": {
     "rest": false,
-    "phone_pickup": false,
-    "phone_loop": false,
-    "phone_putdown": false,
-    "computer_go": false,
+    "phone_pickup": true,
+    "phone_loop": true,
+    "phone_putdown": true,
+    "computer_go": true,
     "computer_loop": true,
-    "computer_rest": false
+    "computer_rest": true
   },
   "durations": {
-    "rest": 12.096,
-    "phone_pickup": 4.064,
-    "phone_loop": 8.064,
-    "phone_putdown": 3.042,
-    "computer_go": 5.175,
-    "computer_loop": 15.072,
-    "computer_rest": 10.08
+    "rest": 4.062993
   },
   "settings": {
     "crossfade_ms": 400,

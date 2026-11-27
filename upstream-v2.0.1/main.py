@@ -641,7 +641,9 @@ class FishHousePlugin(Star):
             return False
 
     async def initialize(self) -> None:
-        self._backup_data("before-update")
+        # 启动/重载时不再整包备份：每次重启都会多一份，内容也没变，纯属重复占地方。
+        # 真正改动素材的三处照旧备份：before-clear-<slot> / before-replace-<slot> / before-restore。
+        # self._backup_data("before-update")
         first_run = not int(self.settings.get("defaults_applied") or 0)
         self._install_builtin_videos()
         if first_run:
@@ -1371,7 +1373,7 @@ class FishHousePlugin(Star):
                 await self.flow_goto(
                     self._work_flow_node,
                     text=activity or self._flow_label(node) or "在电脑前干活",
-                    loop=True,
+                    loop=None,   # 尊重节点自身 loop：过渡节点（去电脑）播完自动走进玩电脑循环
                 )
                 return True
         self.state["task_done"] = False
@@ -1405,6 +1407,19 @@ class FishHousePlugin(Star):
                     self._write_state_locked()
                 return
             self._work_flow_node = ""
+            # 收工时若当前节点有唯一过渡出边（电脑回休息），先播它，再沿边回等待
+            cur = self._flow_node(str(self.state.get("node_id") or ""))
+            if cur is not None:
+                outs = self._flow_outgoing(str(cur.get("id") or ""))
+                if len(outs) == 1:
+                    nxt = self._flow_node(str(outs[0].get("to") or ""))
+                    if nxt is not None and self._flow_role(nxt) == "transition":
+                        await self.flow_goto(
+                            str(nxt.get("id") or ""),
+                            text="忙完啦，回窝里歇着",
+                            loop=None,
+                        )
+                        return
             node = self.flow_idle_node()
             if node is not None:
                 await self.flow_goto(

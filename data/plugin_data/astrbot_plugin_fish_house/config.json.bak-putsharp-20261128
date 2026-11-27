@@ -1,0 +1,281 @@
+{
+  "actions": [
+    {
+      "key": "rest",
+      "label": "休息循环",
+      "hint": "啥也不干时循环播放",
+      "loop": true
+    },
+    {
+      "key": "phone_pickup",
+      "label": "拿起手机",
+      "hint": "收到消息，伸手拿手机",
+      "loop": false
+    },
+    {
+      "key": "phone_loop",
+      "label": "玩手机 / 回消息",
+      "hint": "看手机、回消息时循环",
+      "loop": true
+    },
+    {
+      "key": "phone_putdown",
+      "label": "放下手机",
+      "hint": "回复完，把手机放回去",
+      "loop": false
+    },
+    {
+      "key": "computer_go",
+      "label": "去电脑",
+      "hint": "从休息处走到电脑前",
+      "loop": false
+    },
+    {
+      "key": "computer_loop",
+      "label": "玩电脑 / 干活",
+      "hint": "干活时循环",
+      "loop": true
+    },
+    {
+      "key": "computer_rest",
+      "label": "电脑回休息",
+      "hint": "干完活，从电脑回到休息",
+      "loop": false
+    }
+  ],
+  "flow": {
+    "nodes": [
+      {
+        "id": "wait_1",
+        "label": "吃零食",
+        "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+        "loop": true,
+        "role": "wait",
+        "prompt": "边吃零食边等待主人回消息",
+        "note": "",
+        "duration": 4.062993,
+        "media_id": "m_389ed990",
+        "x": 420.0,
+        "y": 220.0
+      },
+      {
+        "id": "computer_go",
+        "label": "去电脑",
+        "video": "videos/theme_50756926fc_asset_pcgo-0a1b-soft1080.mp4",
+        "loop": false,
+        "role": "transition",
+        "prompt": "",
+        "note": "",
+        "duration": 5.0,
+        "media_id": "m_pcgo0001",
+        "x": 300.0,
+        "y": 480.0
+      },
+      {
+        "id": "computer_loop",
+        "label": "玩电脑",
+        "video": "videos/theme_50756926fc_asset_pcloop-2c3d-soft1080.mp4",
+        "loop": true,
+        "role": "both",
+        "prompt": "",
+        "note": "",
+        "duration": 8.0,
+        "media_id": "m_pcloop002",
+        "x": 570.0,
+        "y": 480.0
+      },
+      {
+        "id": "computer_rest",
+        "label": "电脑回休息",
+        "video": "videos/theme_50756926fc_asset_pcrest-4e5f-soft1080.mp4",
+        "loop": false,
+        "role": "transition",
+        "prompt": "",
+        "note": "",
+        "duration": 5.0,
+        "media_id": "m_pcrest003",
+        "x": 830.0,
+        "y": 480.0
+      },
+      {
+        "id": "node_mwarm5xy",
+        "label": "收到消息",
+        "video": "videos/theme_50756926fc_asset_1794319687-49a211-soft1080.mp4",
+        "loop": false,
+        "role": "action",
+        "prompt": "",
+        "note": "",
+        "duration": 3.877732,
+        "media_id": "m_ce3add8d",
+        "x": 332.0,
+        "y": 362.0
+      },
+      {
+        "id": "node_msgloop",
+        "label": "回消息",
+        "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
+        "loop": false,
+        "role": "action",
+        "prompt": "",
+        "note": "",
+        "duration": 5.056009,
+        "media_id": "m_4d04b060",
+        "x": 560.0,
+        "y": 600.0
+      },
+      {
+        "id": "node_mwarwecp",
+        "label": "放下手机",
+        "video": "videos/theme_50756926fc_asset_1794320123-b0617a-soft1080.mp4",
+        "loop": false,
+        "role": "action",
+        "prompt": "",
+        "note": "",
+        "duration": 4.062993,
+        "media_id": "m_01d6b68d",
+        "x": 759.0,
+        "y": 237.0
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_wait_msg",
+        "from": "wait_1",
+        "to": "node_mwarm5xy",
+        "label": "收到消息"
+      },
+      {
+        "id": "e_msg_loop",
+        "from": "node_mwarm5xy",
+        "to": "node_msgloop",
+        "label": ""
+      },
+      {
+        "id": "e_loop_put",
+        "from": "node_msgloop",
+        "to": "node_mwarwecp",
+        "label": ""
+      },
+      {
+        "id": "e_put_wait",
+        "from": "node_mwarwecp",
+        "to": "wait_1",
+        "label": ""
+      },
+      {
+        "id": "e_go_loop",
+        "from": "computer_go",
+        "to": "computer_loop",
+        "label": "坐到电脑前"
+      },
+      {
+        "id": "e_loop_rest",
+        "from": "computer_loop",
+        "to": "computer_rest",
+        "label": "活干完了"
+      },
+      {
+        "id": "e_rest_wait",
+        "from": "computer_rest",
+        "to": "wait_1",
+        "label": ""
+      }
+    ]
+  },
+  "library": [
+    {
+      "id": "m_5938a3c5",
+      "name": "回消息",
+      "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
+      "duration": 5.056009
+    },
+    {
+      "id": "m_deae154c",
+      "name": "休息",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_b69a515d",
+      "name": "回消息工作",
+      "video": "videos/theme_50756926fc_asset_1794317636-273441-soft1080.mp4",
+      "duration": 3.542
+    },
+    {
+      "id": "m_ce3add8d",
+      "name": "收到消息",
+      "video": "videos/theme_50756926fc_asset_1794319687-49a211-soft1080.mp4",
+      "duration": 3.877732
+    },
+    {
+      "id": "m_01d6b68d",
+      "name": "放下手机",
+      "video": "videos/theme_50756926fc_asset_1794320123-b0617a-soft1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_pcgo0001",
+      "name": "去电脑",
+      "video": "videos/theme_50756926fc_asset_pcgo-0a1b-soft1080.mp4",
+      "duration": 5.0
+    },
+    {
+      "id": "m_pcloop002",
+      "name": "玩电脑 / 干活",
+      "video": "videos/theme_50756926fc_asset_pcloop-2c3d-soft1080.mp4",
+      "duration": 8.0
+    },
+    {
+      "id": "m_pcrest003",
+      "name": "电脑回休息",
+      "video": "videos/theme_50756926fc_asset_pcrest-4e5f-soft1080.mp4",
+      "duration": 5.0
+    },
+    {
+      "id": "m_97b47810",
+      "name": "休息循环",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_389ed990",
+      "name": "休息循环",
+      "video": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4",
+      "duration": 4.062993
+    },
+    {
+      "id": "m_4d04b060",
+      "name": "回消息",
+      "video": "videos/theme_50756926fc_asset_1794316414-8b109c-sharp1080.mp4",
+      "duration": 5.056009
+    }
+  ],
+  "theme_meta": {
+    "name": "小肥鱼的零食",
+    "author": "",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "active_theme_id": "50756926fc",
+  "theme_market_url": "https://shop.swellengine.com/",
+  "videos": {
+    "rest": "videos/theme_50756926fc_asset_1794316415-ced776-sharp1080.mp4"
+  },
+  "audio": {
+    "rest": false,
+    "phone_pickup": true,
+    "phone_loop": true,
+    "phone_putdown": true,
+    "computer_go": true,
+    "computer_loop": true,
+    "computer_rest": true
+  },
+  "durations": {
+    "rest": 4.062993
+  },
+  "settings": {
+    "crossfade_ms": 400,
+    "auto_reply": 1,
+    "defaults_applied": 1
+  }
+}

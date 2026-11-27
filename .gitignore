@@ -12,3 +12,8 @@ data/dist/fish_house/state.json
 *.log
 _serve.out
 _serve.err
+
+# 本地素材审查目录与超分工具（体积大，不入库）
+tools/review-*/
+tools/realesrgan-ncnn-vulkan/
+tools/*.zip
